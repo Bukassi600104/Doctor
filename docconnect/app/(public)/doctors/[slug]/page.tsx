@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /**
  * /doctors/[slug] — Doctor profile page (Server Component + placeholder data)
  *
@@ -64,7 +65,7 @@ function getMockDoctor(_slug: string): FullDoctorProfile {
       role: 'doctor',
       full_name: 'Emeka Obi',
       phone: null,
-      avatar_url: null,
+      avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBwsoQJm5T_pLf1jR57Dow3hL_C4vbpE5t4aSS87Vr4RQqhpq4kBQm7sZIqZSqyMul5sUlJxyEL6Lyp99vY6NBIHxNJiaIBcFCMI26hS2NY6U-4Gwf7iJnMKz52g2pZBYSr744yugA0_CFoMe61KiNJiaxtWYvJZka5Sh3Ia3ZNyLRIHYM4EFeagsp6QC0Yt0k9VPz3uBd7c_jgP2jRRl0h72ehZGebkHKOzb9trQkssA1asxUh3H9iOOmRtiMqdIEQpAH7rUrm9aRV',
       email: 'emeka@example.com',
       created_at: '2024-01-01T00:00:00Z',
       updated_at: '2024-01-01T00:00:00Z',
@@ -173,7 +174,7 @@ export default async function DoctorProfilePage({
     <div className="min-h-screen" style={{ background: '#F8F5F0' }}>
       {/* Back nav */}
       <div
-        className="sticky top-16 z-40 backdrop-blur-md border-b"
+        className="border-b"
         style={{ background: 'rgba(248,245,240,0.92)', borderColor: '#E5E7EB' }}
       >
         <div className="max-w-6xl mx-auto px-4 py-3">
@@ -210,11 +211,21 @@ export default async function DoctorProfilePage({
               <div className="px-6 pb-6">
                 {/* Avatar */}
                 <div className="relative -mt-12 mb-4 w-fit">
-                  <div
-                    className="w-24 h-24 rounded-2xl flex items-center justify-center text-white font-bold text-3xl shadow-lg border-4 border-white"
-                    style={{ background: '#0C4A2F' }}
-                  >
-                    {initials}
+                  <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-4 border-white">
+                    {doctor.profile.avatar_url ? (
+                      <img
+                        src={doctor.profile.avatar_url}
+                        alt={`Dr. ${name}`}
+                        className="w-full h-full object-cover object-top"
+                      />
+                    ) : (
+                      <div
+                        className="w-full h-full flex items-center justify-center text-white font-bold text-3xl"
+                        style={{ background: '#0C4A2F' }}
+                      >
+                        {initials}
+                      </div>
+                    )}
                   </div>
                   <div className="absolute bottom-1 right-1">
                     <OnlineIndicator isOnline={doctor.is_online} size="md" />

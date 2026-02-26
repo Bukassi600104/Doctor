@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 function PublicNavbar() {
   return (
     <nav
-      className="sticky top-0 z-50 backdrop-blur-md border-b"
+      className="border-b"
       style={{ background: 'rgba(245,239,228,0.92)', borderColor: '#E5E7EB' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

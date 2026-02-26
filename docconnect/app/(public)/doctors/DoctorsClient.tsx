@@ -17,6 +17,10 @@ const IMGS = [
   'https://lh3.googleusercontent.com/aida-public/AB6AXuAk4j0LCfB8xClsqb1_PZS3sNGhh8uccexYH9V-aTwdUZpDHWhxs4iG7jkqP8zbYDGAZxwkmmO9rszLPIevinQdNAg9sWWv3L16s2W3oKGY9jjzk1ktXFRhsEhlCkTRxQ-cz2vURpfdyb6qGGJ-cGYBhr-KloY3HN9azwlZYzWK1U3tOiAk08QTCtCNr2hgFDeX9W6uoIoBP2dC0SCzt4nw1Juc8kUQJhN3qS8O5fao1dSPeGwO15V3Su2tcNnqP-BZqcYclXdV7jWD',
   // Female 2
   'https://lh3.googleusercontent.com/aida-public/AB6AXuC3DXqyrT8dZPkadL7_Zsr7fnTWA-2YbKYjbtDqczzjvioISY9u8h4_kr9e69yrZJN6Bndwil9zxNqAQOB5RnqTQWx-aLob-h9AXqAD2fSsWAH1jy87AEb2-KjzcTl8CeS638HBB9F-oHr7LNokwgJA0wx3ue2rSzGH8-T3D2aQAprLhbaogpYbpfJunSb-5-1jHJ1s8SoOUJmt6jJMKTl9vzvWiO7DZ5mpLt0TOTFE3dmPTUUUwIdqV8amVWcbaKSg7E61CEvVDuzD',
+  // Female 3 (reuse Female 1 variant)
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuBciAu_di7htkpn6yBtTWjqa_TmsUVDr0JwxNHOsVqlU3y-mTKyRF-eOZp33KhM-yMbhlPTsSchCcFhPC4p-fixpvdlkrVA1GVlvL9VBOut_wFPyq0airuQQypsKSHI4XwUIaYqE2GsfMgp6uKiXd8vLjFaEBGlSNfE6iwKk530j8cQ_pWRmOeeLJ0QzE7OcImch102v1kNnqz-C5zK06uwCIg9UOV1M-gFNVi4PRHtKTElYu4G4NbTjjHJcTZYh1MdqhoFbzomvO6i',
+  // Male 3 (reuse Male 1 variant)
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuBwsoQJm5T_pLf1jR57Dow3hL_C4vbpE5t4aSS87Vr4RQqhpq4kBQm7sZIqZSqyMul5sUlJxyEL6Lyp99vY6NBIHxNJiaIBcFCMI26hS2NY6U-4Gwf7iJnMKz52g2pZBYSr744yugA0_CFoMe61KiNJiaxtWYvJZka5Sh3Ia3ZNyLRIHYM4EFeagsp6QC0Yt0k9VPz3uBd7c_jgP2jRRl0h72ehZGebkHKOzb9trQkssA1asxUh3H9iOOmRtiMqdIEQpAH7rUrm9aRV',
 ]
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -119,12 +123,72 @@ const MOCK_DOCTORS: DoctorWithRelations[] = [
     profile: { full_name: 'Ngozi Okafor', avatar_url: IMGS[1] },
     specialization: { name: 'Gynaecology' },
   },
+  {
+    id: '7', user_id: 'u7', specialization_id: 's7',
+    bio: 'Endocrinologist specialising in diabetes management, thyroid disorders, and hormonal imbalances. Fluent in patient education.',
+    location_state: 'Lagos', location_city: 'Surulere',
+    mdcn_number: 'MDCN/55123', verification_status: 'verified',
+    one_time_rate: 16000, subscription_rate: 48000,
+    is_online: true, last_seen: new Date().toISOString(),
+    languages: ['English', 'Igbo'], years_experience: 11,
+    education: 'MBBS, University of Nigeria Nsukka; FMCP (Endocrinology)',
+    paystack_subaccount_code: null, slug: 'dr-chiamaka-nwosu',
+    rating_avg: 4.9, rating_count: 93,
+    created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z',
+    profile: { full_name: 'Chiamaka Nwosu', avatar_url: IMGS[3] },
+    specialization: { name: 'Endocrinology' },
+  },
+  {
+    id: '8', user_id: 'u8', specialization_id: 's8',
+    bio: 'Ophthalmologist with expertise in glaucoma, cataracts, and refractive surgery. Over 8 years performing surgical and medical eye care.',
+    location_state: 'Abuja', location_city: 'Garki',
+    mdcn_number: 'MDCN/77344', verification_status: 'verified',
+    one_time_rate: 13000, subscription_rate: 38000,
+    is_online: false, last_seen: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    languages: ['English', 'Hausa'], years_experience: 8,
+    education: 'MBBS, University of Maiduguri; FMCOphth',
+    paystack_subaccount_code: null, slug: 'dr-halima-usman',
+    rating_avg: 4.7, rating_count: 55,
+    created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z',
+    profile: { full_name: 'Halima Usman', avatar_url: IMGS[4] },
+    specialization: { name: 'Ophthalmology' },
+  },
+  {
+    id: '9', user_id: 'u9', specialization_id: 's9',
+    bio: 'Neurologist focused on epilepsy, stroke rehabilitation, and neurodegenerative disorders. Trained at LUTH and the UCL Institute of Neurology.',
+    location_state: 'Lagos', location_city: 'Yaba',
+    mdcn_number: 'MDCN/88201', verification_status: 'verified',
+    one_time_rate: 22000, subscription_rate: 60000,
+    is_online: true, last_seen: new Date().toISOString(),
+    languages: ['English', 'Yoruba'], years_experience: 15,
+    education: 'MBBS, University of Lagos; FWACP (Neurology); MSc, UCL London',
+    paystack_subaccount_code: null, slug: 'dr-olawale-adeyinka',
+    rating_avg: 5.0, rating_count: 38,
+    created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z',
+    profile: { full_name: 'Olawale Adeyinka', avatar_url: IMGS[5] },
+    specialization: { name: 'Neurology' },
+  },
+  {
+    id: '10', user_id: 'u10', specialization_id: 's10',
+    bio: 'Internal medicine physician with a broad clinical scope covering hypertension, diabetes, infections, and complex multi-system disease.',
+    location_state: 'Kano', location_city: 'Nasarawa GRA',
+    mdcn_number: 'MDCN/66432', verification_status: 'verified',
+    one_time_rate: 10000, subscription_rate: 30000,
+    is_online: false, last_seen: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
+    languages: ['English', 'Hausa', 'Fulfulde'], years_experience: 9,
+    education: 'MBBS, Bayero University Kano; FMCP (Internal Medicine)',
+    paystack_subaccount_code: null, slug: 'dr-fatimah-sani',
+    rating_avg: 4.6, rating_count: 72,
+    created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z',
+    profile: { full_name: 'Fatimah Sani', avatar_url: IMGS[3] },
+    specialization: { name: 'Internal Medicine' },
+  },
 ]
 
 const SPECIALTIES = [
   'All Specialties',
-  'Cardiology', 'Dermatology', 'General Practice', 'Gynaecology',
-  'Neurology', 'Ophthalmology', 'Paediatrics', 'Psychiatry', 'Surgery',
+  'Cardiology', 'Dermatology', 'Endocrinology', 'General Practice', 'Gynaecology',
+  'Internal Medicine', 'Neurology', 'Ophthalmology', 'Paediatrics', 'Psychiatry', 'Surgery',
 ]
 
 const STATES = [
