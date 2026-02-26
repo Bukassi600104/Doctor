@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -21,7 +20,6 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
-  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [role, setRole] = useState<'patient' | 'doctor'>('patient')
   const [isLoading, setIsLoading] = useState(false)
@@ -69,12 +67,14 @@ export default function LoginPage() {
 
     toast.success('Welcome back!')
 
+    // Hard redirect so the server re-reads the fresh auth cookies
+    // (router.push alone can race against middleware cookie propagation)
     if (profile.role === 'doctor') {
-      router.push('/doctor/dashboard')
+      window.location.href = '/doctor/dashboard'
     } else if (profile.role === 'admin') {
-      router.push('/admin/verification')
+      window.location.href = '/admin/verification'
     } else {
-      router.push('/patient/dashboard')
+      window.location.href = '/patient/dashboard'
     }
   }
 

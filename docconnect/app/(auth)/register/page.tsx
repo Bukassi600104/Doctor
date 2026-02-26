@@ -108,13 +108,8 @@ function RegisterForm() {
       console.error('Profile insert error:', profileError.message)
     }
 
-    toast.success('Account created! Welcome to DocConnect.')
-
-    if (role === 'doctor') {
-      router.push('/doctor/onboarding')
-    } else {
-      router.push('/patient/dashboard')
-    }
+    toast.success('Account created! Please log in to continue.')
+    router.push('/login')
   }
 
   return (
