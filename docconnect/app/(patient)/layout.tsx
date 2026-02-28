@@ -14,18 +14,26 @@ import {
   Menu,
   X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 
 // ── Nav item definitions ──────────────────────────────────────────────────────
 
 const NAV_ITEMS = [
   { href: '/patient/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/doctors', icon: Search, label: 'Find Doctor' },
+  { href: '/patient/dashboard?tab=find-doctor', icon: Search, label: 'Find Doctor' },
   { href: '/patient/chats', icon: MessageCircle, label: 'My Chats' },
   { href: '/patient/documents', icon: FileText, label: 'Documents' },
   { href: '/patient/settings', icon: Settings, label: 'Settings' },
 ]
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface UserProfile {
+  full_name: string
+  avatar_url: string | null
+}
 
 // ── Sidebar nav item ──────────────────────────────────────────────────────────
 
@@ -63,8 +71,19 @@ function NavItem({ href, icon: Icon, label, active, onClick }: NavItemProps) {
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
-function Sidebar({ onClose }: { onClose?: () => void }) {
+interface SidebarProps {
+  onClose?: () => void
+  userProfile: UserProfile | null
+  onLogout: () => void
+}
+
+function Sidebar({ onClose, userProfile, onLogout }: SidebarProps) {
   const pathname = usePathname()
+
+  const initials = userProfile
+    ? userProfile.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    : '??'
+  const displayName = userProfile?.full_name ?? 'Loading...'
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#FAFAFA' }}>
@@ -99,14 +118,23 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
         className="mx-3 mt-4 mb-2 px-3 py-2.5 rounded-xl flex items-center gap-3"
         style={{ background: '#E8F5EE' }}
       >
-        <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-          style={{ background: '#0C4A2F' }}
-        >
-          AO
-        </div>
+        {userProfile?.avatar_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={userProfile.avatar_url}
+            alt={userProfile.full_name}
+            className="w-8 h-8 rounded-full object-cover shrink-0"
+          />
+        ) : (
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+            style={{ background: '#0C4A2F' }}
+          >
+            {initials}
+          </div>
+        )}
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-xs truncate" style={{ color: '#1C1917' }}>Amara Okonkwo</p>
+          <p className="font-semibold text-xs truncate" style={{ color: '#1C1917' }}>{displayName}</p>
           <p className="text-xs" style={{ color: '#9CA3AF' }}>Patient</p>
         </div>
         <Bell className="w-4 h-4 shrink-0 cursor-pointer hover:opacity-70 transition-opacity" style={{ color: '#9CA3AF' }} />
@@ -121,7 +149,7 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
             active={
               item.href === '/patient/dashboard'
                 ? pathname === item.href
-                : pathname.startsWith(item.href)
+                : pathname.startsWith(item.href.split('?')[0]) && item.href.split('?')[0] !== '/patient/dashboard'
             }
             onClick={onClose}
           />
@@ -131,6 +159,7 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
       {/* Logout */}
       <div className="px-3 py-4" style={{ borderTop: '1px solid #E5E7EB' }}>
         <button
+          onClick={onLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-red-50 hover:text-red-600"
           style={{ color: '#9CA3AF' }}
         >
@@ -158,7 +187,7 @@ function BottomTabBar() {
           const active =
             href === '/patient/dashboard'
               ? pathname === href
-              : pathname.startsWith(href)
+              : pathname.startsWith(href.split('?')[0]) && href.split('?')[0] !== '/patient/dashboard'
           return (
             <Link
               key={href}
@@ -184,6 +213,28 @@ export default function PatientLayout({
   children: React.ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    const load = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url')
+        .eq('id', user.id)
+        .single()
+      if (data) setUserProfile(data)
+    }
+    load()
+  }, [])
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.href = '/login'
+  }
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#F8F5F0' }}>
@@ -192,7 +243,7 @@ export default function PatientLayout({
         className="hidden lg:flex lg:flex-col lg:w-60 xl:w-64 shrink-0 border-r"
         style={{ borderColor: '#E5E7EB', background: '#FAFAFA' }}
       >
-        <Sidebar />
+        <Sidebar userProfile={userProfile} onLogout={handleLogout} />
       </aside>
 
       {/* Mobile drawer overlay */}
@@ -211,7 +262,7 @@ export default function PatientLayout({
         )}
         style={{ borderColor: '#E5E7EB' }}
       >
-        <Sidebar onClose={() => setSidebarOpen(false)} />
+        <Sidebar onClose={() => setSidebarOpen(false)} userProfile={userProfile} onLogout={handleLogout} />
       </aside>
 
       {/* Main content */}

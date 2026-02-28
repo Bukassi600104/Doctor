@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -49,7 +49,6 @@ export default function RegisterPage() {
 }
 
 function RegisterForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const initialRole = searchParams.get('role') === 'doctor' ? 'doctor' : 'patient'
 
@@ -108,8 +107,12 @@ function RegisterForm() {
       console.error('Profile insert error:', profileError.message)
     }
 
-    toast.success('Account created! Please log in to continue.')
-    router.push('/login')
+    toast.success('Account created! Welcome to DocConnect.')
+    if (role === 'doctor') {
+      window.location.href = '/doctor/onboarding'
+    } else {
+      window.location.href = '/patient/dashboard'
+    }
   }
 
   return (

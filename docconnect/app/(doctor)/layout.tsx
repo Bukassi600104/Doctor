@@ -15,8 +15,9 @@ import {
   X,
   MessageCircle,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 
 // ── Nav items ─────────────────────────────────────────────────────────────────
 
@@ -28,6 +29,14 @@ const NAV_ITEMS = [
   { href: '/doctor/schedule', icon: Calendar, label: 'Schedule' },
   { href: '/doctor/settings', icon: Settings, label: 'Settings' },
 ]
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface DoctorUserProfile {
+  full_name: string
+  avatar_url: string | null
+  is_online: boolean
+}
 
 // ── Nav item component ────────────────────────────────────────────────────────
 
@@ -74,8 +83,20 @@ function NavItem({ href, icon: Icon, label, active, badge, onClick }: NavItemPro
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 
-function Sidebar({ onClose }: { onClose?: () => void }) {
+interface SidebarProps {
+  onClose?: () => void
+  userProfile: DoctorUserProfile | null
+  onLogout: () => void
+}
+
+function Sidebar({ onClose, userProfile, onLogout }: SidebarProps) {
   const pathname = usePathname()
+
+  const initials = userProfile
+    ? userProfile.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    : '??'
+  const displayName = userProfile ? `Dr. ${userProfile.full_name.split(' ')[0]}` : 'Loading...'
+  const isOnline = userProfile?.is_online ?? false
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#FAFAFA' }}>
@@ -110,17 +131,34 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
         className="mx-3 mt-4 mb-2 px-3 py-2.5 rounded-xl flex items-center gap-3"
         style={{ background: '#E8F5EE' }}
       >
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-          style={{ background: '#0C4A2F' }}
-        >
-          EO
-        </div>
+        {userProfile?.avatar_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={userProfile.avatar_url}
+            alt={userProfile.full_name}
+            className="w-9 h-9 rounded-full object-cover shrink-0"
+          />
+        ) : (
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+            style={{ background: '#0C4A2F' }}
+          >
+            {initials}
+          </div>
+        )}
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-xs truncate" style={{ color: '#1C1917' }}>Dr. Emeka Obi</p>
+          <p className="font-semibold text-xs truncate" style={{ color: '#1C1917' }}>{displayName}</p>
           <div className="flex items-center gap-1 mt-0.5">
-            <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
-            <span className="text-xs text-green-600 font-medium">Online</span>
+            <span
+              className="w-2 h-2 rounded-full inline-block"
+              style={{ background: isOnline ? '#16A34A' : '#9CA3AF' }}
+            />
+            <span
+              className="text-xs font-medium"
+              style={{ color: isOnline ? '#16A34A' : '#9CA3AF' }}
+            >
+              {isOnline ? 'Online' : 'Offline'}
+            </span>
           </div>
         </div>
         <Bell className="w-4 h-4 shrink-0 cursor-pointer hover:opacity-70 transition-opacity" style={{ color: '#9CA3AF' }} />
@@ -146,6 +184,7 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
       {/* Logout */}
       <div className="px-3 py-4" style={{ borderTop: '1px solid #E5E7EB' }}>
         <button
+          onClick={onLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-red-50 hover:text-red-600"
           style={{ color: '#9CA3AF' }}
         >
@@ -199,6 +238,33 @@ export default function DoctorLayout({
   children: React.ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [userProfile, setUserProfile] = useState<DoctorUserProfile | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    const load = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const [profileRes, doctorRes] = await Promise.all([
+        supabase.from('profiles').select('full_name, avatar_url').eq('id', user.id).single(),
+        supabase.from('doctor_profiles').select('is_online').eq('user_id', user.id).single(),
+      ])
+      if (profileRes.data) {
+        setUserProfile({
+          full_name: profileRes.data.full_name,
+          avatar_url: profileRes.data.avatar_url,
+          is_online: doctorRes.data?.is_online ?? false,
+        })
+      }
+    }
+    load()
+  }, [])
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.href = '/login'
+  }
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#F8F5F0' }}>
@@ -207,7 +273,7 @@ export default function DoctorLayout({
         className="hidden lg:flex lg:flex-col lg:w-60 xl:w-64 shrink-0 border-r"
         style={{ borderColor: '#E5E7EB', background: '#FAFAFA' }}
       >
-        <Sidebar />
+        <Sidebar userProfile={userProfile} onLogout={handleLogout} />
       </aside>
 
       {/* Mobile overlay */}
@@ -226,7 +292,7 @@ export default function DoctorLayout({
         )}
         style={{ borderColor: '#E5E7EB' }}
       >
-        <Sidebar onClose={() => setSidebarOpen(false)} />
+        <Sidebar onClose={() => setSidebarOpen(false)} userProfile={userProfile} onLogout={handleLogout} />
       </aside>
 
       {/* Main */}

@@ -7,8 +7,9 @@
  * subscriptions for online status and unread messages.
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import {
   TrendingUp,
   Wallet,
@@ -27,16 +28,16 @@ import { formatNaira, formatRelativeTime } from '@/lib/utils'
 // ── Placeholder data ──────────────────────────────────────────────────────────
 
 const MOCK_EARNINGS = {
-  thisMonth: 285000,
-  total: 1420000,
-  pending: 45000,
+  thisMonth: 0,
+  total: 0,
+  pending: 0,
 }
 
 const MOCK_STATS = {
-  consultationsToday: 4,
-  activePatients: 12,
-  avgResponseTime: '8 min',
-  rating: 4.9,
+  consultationsToday: 0,
+  activePatients: 0,
+  avgResponseTime: '—',
+  rating: 0,
 }
 
 const MOCK_PATIENT_QUEUE = [
@@ -219,6 +220,23 @@ function StatCard({
 
 export default function DoctorDashboardPage() {
   const totalUnread = MOCK_PATIENT_QUEUE.reduce((sum, p) => sum + p.unreadCount, 0)
+  const [firstName, setFirstName] = useState<string | null>(null)
+  const [rating, setRating] = useState<{ avg: number; count: number } | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    const load = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const [profileRes, doctorRes] = await Promise.all([
+        supabase.from('profiles').select('full_name').eq('id', user.id).single(),
+        supabase.from('doctor_profiles').select('rating_avg, rating_count').eq('user_id', user.id).single(),
+      ])
+      if (profileRes.data) setFirstName(profileRes.data.full_name.split(' ')[0])
+      if (doctorRes.data) setRating({ avg: doctorRes.data.rating_avg ?? 0, count: doctorRes.data.rating_count ?? 0 })
+    }
+    load()
+  }, [])
 
   return (
     <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5 max-w-5xl mx-auto w-full">
@@ -231,7 +249,7 @@ export default function DoctorDashboardPage() {
           Doctor Dashboard
         </h1>
         <p className="mt-1 text-sm" style={{ color: '#9CA3AF' }}>
-          Welcome back, Dr. Emeka. Here&apos;s your overview for today.
+          Welcome back, {firstName ? `Dr. ${firstName}` : 'Doctor'}. Here&apos;s your overview for today.
         </p>
       </div>
 
@@ -267,7 +285,7 @@ export default function DoctorDashboardPage() {
         <StatCard
           icon={Star}
           label="Rating"
-          value={`${MOCK_STATS.rating}★`}
+          value={rating && rating.count > 0 ? `${rating.avg.toFixed(1)}★` : '—'}
           iconColor="#CA8A04"
           iconBg="#FEF9C3"
         />
