@@ -390,7 +390,7 @@ function InlineDoctorCard({
         </div>
 
         <Link
-          href={`/doctors/${doctor.slug}`}
+          href={`/patient/doctors/${doctor.slug}`}
           className="block text-center text-xs font-semibold py-2 rounded-lg transition-opacity hover:opacity-90"
           style={{ background: '#0C4A2F', color: '#fff' }}
         >

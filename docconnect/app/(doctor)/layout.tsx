@@ -27,7 +27,7 @@ const NAV_ITEMS = [
   { href: '/doctor/chats', icon: MessageCircle, label: 'Chats' },
   { href: '/doctor/earnings', icon: Wallet, label: 'Earnings' },
   { href: '/doctor/schedule', icon: Calendar, label: 'Schedule' },
-  { href: '/doctor/settings', icon: Settings, label: 'Settings' },
+  // Settings intentionally removed — moved to bottom section above Logout
 ]
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -181,8 +181,20 @@ function Sidebar({ onClose, userProfile, onLogout }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Logout */}
-      <div className="px-3 py-4" style={{ borderTop: '1px solid #E5E7EB' }}>
+      {/* Settings + Logout */}
+      <div className="px-3 py-4 space-y-0.5" style={{ borderTop: '1px solid #E5E7EB' }}>
+        <Link
+          href="/doctor/settings"
+          onClick={onClose}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-gray-100"
+          style={{
+            color: pathname === '/doctor/settings' ? '#0C4A2F' : '#6B7280',
+            background: pathname === '/doctor/settings' ? 'rgba(12,74,47,0.08)' : 'transparent',
+          }}
+        >
+          <Settings className="w-4 h-4 shrink-0" />
+          Settings
+        </Link>
         <button
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-red-50 hover:text-red-600"
@@ -255,6 +267,10 @@ export default function DoctorLayout({
           avatar_url: profileRes.data.avatar_url,
           is_online: doctorRes.data?.is_online ?? false,
         })
+      } else {
+        // Fallback: use auth metadata so sidebar never stays blank
+        const metaName = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? 'Doctor'
+        setUserProfile({ full_name: metaName, avatar_url: null, is_online: false })
       }
     }
     load()

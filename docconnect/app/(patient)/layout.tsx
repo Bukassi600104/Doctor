@@ -25,7 +25,6 @@ const NAV_ITEMS = [
   { href: '/patient/dashboard?tab=find-doctor', icon: Search, label: 'Find Doctor' },
   { href: '/patient/chats', icon: MessageCircle, label: 'My Chats' },
   { href: '/patient/documents', icon: FileText, label: 'Documents' },
-  { href: '/patient/settings', icon: Settings, label: 'Settings' },
 ]
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -156,8 +155,20 @@ function Sidebar({ onClose, userProfile, onLogout }: SidebarProps) {
         ))}
       </nav>
 
-      {/* Logout */}
-      <div className="px-3 py-4" style={{ borderTop: '1px solid #E5E7EB' }}>
+      {/* Settings + Logout */}
+      <div className="px-3 py-4 space-y-0.5" style={{ borderTop: '1px solid #E5E7EB' }}>
+        <Link
+          href="/patient/settings"
+          onClick={onClose}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-gray-100"
+          style={{
+            color: pathname === '/patient/settings' ? '#0C4A2F' : '#6B7280',
+            background: pathname === '/patient/settings' ? 'rgba(12,74,47,0.08)' : 'transparent',
+          }}
+        >
+          <Settings className="w-4 h-4 shrink-0" />
+          Settings
+        </Link>
         <button
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:bg-red-50 hover:text-red-600"
@@ -225,7 +236,13 @@ export default function PatientLayout({
         .select('full_name, avatar_url')
         .eq('id', user.id)
         .single()
-      if (data) setUserProfile(data)
+      if (data) {
+        setUserProfile(data)
+      } else {
+        // Fallback: use auth metadata so sidebar never stays blank
+        const metaName = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? 'User'
+        setUserProfile({ full_name: metaName, avatar_url: null })
+      }
     }
     load()
   }, [])
